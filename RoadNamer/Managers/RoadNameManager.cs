@@ -11,10 +11,15 @@ namespace RoadNamer.Managers
     public class RoadNameManager
     {
         private static RoadNameManager instance = null;
-        
-        //Dictionary of the segmentId to the road name container
-        public Dictionary<ushort, RoadContainer> m_roadDict = new Dictionary<ushort, RoadContainer>();
 
+        /// <summary>
+        /// Dictionary of the segmentId to the road name container
+        /// </summary>
+        public Dictionary<ushort, RoadContainer> m_roadDict = new Dictionary<ushort, RoadContainer>();
+        /// <summary>
+        /// Hashset of names already used( for random name generator)
+        /// </summary> 
+        public HashSet<string> m_usedNames = new HashSet<string>();
 
         public static RoadNameManager Instance()
         {
@@ -26,10 +31,17 @@ namespace RoadNamer.Managers
             return instance;
         }
 
-        public void SetRoadName(ushort segmentId, string name)
+        public void SetRoadName(ushort segmentId, string newName, string oldName=null)
         {
-			RoadContainer container = new RoadContainer( segmentId, name );
+			RoadContainer container = new RoadContainer( segmentId, newName );
             m_roadDict[segmentId] = container;
+            if(oldName != null)
+            {
+                m_usedNames.Remove(StringUtilities.RemoveTags(oldName));
+            }
+            m_usedNames.Add(StringUtilities.RemoveTags(newName));
+            EventBusManager.Instance().Publish("forceupdateroadnames", null);
+
         }
 
         public string GetRoadName(ushort segmentId)
@@ -55,6 +67,7 @@ namespace RoadNamer.Managers
                 foreach (RoadContainer road in roadNames)
                 {
                     m_roadDict[road.m_segmentId] = road;
+                    m_usedNames.Add(StringUtilities.RemoveTags(road.m_roadName));
                 }
             }
             else

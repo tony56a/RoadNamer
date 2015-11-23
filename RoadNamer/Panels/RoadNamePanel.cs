@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace RoadNamer.Panels
 {
-    public class RoadNamePanel : UIPanel
+    public class RoadNamePanel : UIPanel, IEventSubscriber
     {
         protected RectOffset m_UIPadding = new RectOffset(5, 5, 5, 5);
 
@@ -20,6 +20,7 @@ namespace RoadNamer.Panels
 
         public ushort m_netSegmentId = 0;
         public string m_netSegmentName;
+        public UsedNamesPanel m_usedNamesPanel;
 
         public string initialRoadName
         {
@@ -151,17 +152,27 @@ namespace RoadNamer.Panels
 
         private void GetRandomName()
         {
+            int iterations = 0;
             string randomName = "";
-            //TODO: Check against usedName hashset to determine random name uniqueness
-            randomName = Utilities.RandomNameUtilities.GenerateRoadName(m_netSegmentName);
+            do
+            {
+                randomName = Utilities.RandomNameUtilities.GenerateRoadName(m_netSegmentName);
+                // Try to find a random name, but don't get stuck if not possible
+            } while (RoadNameManager.Instance().m_usedNames.Contains(randomName) && iterations < 100);
             m_textField.text = randomName;
         }
 
         private void GetRandomRoute()
         {
+            int iterations = 0;
             string randomName = "";
             //TODO: Check against usedName hashset to determine random name uniqueness
-            randomName = Utilities.RandomNameUtilities.GenerateRouteName(m_netSegmentName);
+            do
+            {
+                randomName = Utilities.RandomNameUtilities.GenerateRouteName(m_netSegmentName);
+            // Try to find a random name, but don't get stuck if not possible
+            } while (RoadNameManager.Instance().m_usedNames.Contains(randomName) && iterations < 100);
+
             m_textField.text = randomName;
         }
 
@@ -173,13 +184,12 @@ namespace RoadNamer.Panels
 
                 if (roadName != null)
                 {
-                    string hexColour = UIMarkupStyle.ColorToHex(m_textField.textColor);
-                    roadName = "<color" + hexColour + ">" + roadName + "</color>";
-
+                    roadName = StringUtilities.WrapNameWithColorTags(roadName, m_textField.textColor);
                     RoadRenderingManager roadRenderingManager = Singleton<RoadRenderingManager>.instance;
-                    RoadNameManager.Instance().SetRoadName(m_netSegmentId, roadName);
+                    RoadNameManager.Instance().SetRoadName(m_netSegmentId, roadName, m_initialRoadName);
+                    m_usedNamesPanel.Hide();
                     Hide();
-
+                    EventBusManager.Instance().Publish("forceupdateroadnames", null);
                     roadRenderingManager.ForceUpdate();
                 }
             }
@@ -200,6 +210,22 @@ namespace RoadNamer.Panels
             else
             {
                 m_textField.text = "";
+            }
+        }
+
+        public void onReceiveEvent(string eventName, object eventData)
+        {
+            LoggerUtilities.LogToConsole(eventName);
+            string message = eventData as string;
+            switch (eventName)
+            {
+                case "updateroadnamepaneltext":
+                    if (message != null){
+                        m_textField.text = message;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
     }

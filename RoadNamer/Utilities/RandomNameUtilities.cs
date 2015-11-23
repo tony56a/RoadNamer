@@ -182,15 +182,11 @@ namespace RoadNamer.Utilities
 
        
         /// <summary>
-        ///List of name used for road naming (main, first, etc)
+        /// List of name used for road naming (main, first, etc)
         /// </summary>
         public static List<string> m_roadNames = defaultRoadNames;
         /// <summary>
-        ///Hashset of names already used( for random name generator)
-        /// </summary> 
-        public static HashSet<string> m_usedNames = new HashSet<string>();
-        /// <summary>
-        ///Dict of route types to designations typically asscociated with the route type (Interstate, Autobahn, Route, Highway, etc)
+        /// Dict of route types to designations typically asscociated with the route type (Interstate, Autobahn, Route, Highway, etc)
         /// </summary>
         public static Dictionary<RoadTypes, List<string>> m_routeTypeNames = new Dictionary<RoadTypes, List<string>>
         {
@@ -207,7 +203,7 @@ namespace RoadNamer.Utilities
         /// </summary>
         public static Dictionary<RoadTypes, List<string>> m_roadTypeNames = new Dictionary<RoadTypes, List<string>>
         {
-            { RoadTypes.None, new List<string>() { "huh?", "what?" } },
+            { RoadTypes.None,new List<string>() { "huh?", "what?" } },
             { RoadTypes.TrainTrack,new List<string>() { "Railway","Railine" } },
             { RoadTypes.MetroTrack,new List<string>() { "Metro","Line","Subway" } },
             { RoadTypes.PedestrianPavement,new List<string>() { "Walkway","Pathway" } },
